@@ -141,6 +141,17 @@ def get_centers(arr, n_clusters):
         centers.append(np.mean(matches, axis=0))
     return centers
 
+def display_results(image, bounding_boxes):
+    '''
+    Draws the bounding boxes given in bounding_boxes on image, and then
+    displays it.
+    '''
+    im = Image.fromarray(image.astype('uint8'), 'RGB')
+    draw = ImageDraw.Draw(im)
+    for i0, j0, i1, j1 in bounding_boxes:
+        draw.rectangle((j0, i0, j1, i1), outline='red')
+    im.show()
+
 def _detect_red_light(image, kernel, quantile, display=False):
     '''
     Helper function.
@@ -165,14 +176,7 @@ def _detect_red_light(image, kernel, quantile, display=False):
 
     # Debug
     if display:
-        im = Image.fromarray(image.astype('uint8'), 'RGB')
-        draw = ImageDraw.Draw(im)
-        for i0, j0, i1, j1 in bounding_boxes:
-            draw.rectangle((j0, i0, j1, i1), outline='red')
-        im.show()
-
-        plt.imshow(result)
-        plt.show()
+        display_results(image, bounding_boxes)
 
     return bounding_boxes
 
@@ -219,12 +223,6 @@ def detect_red_light(I):
     
     for i in range(len(bounding_boxes)):
         assert len(bounding_boxes[i]) == 4
-
-    # im = Image.fromarray(I.astype('uint8'), 'RGB')
-    # draw = ImageDraw.Draw(im)
-    # for i0, j0, i1, j1 in bounding_boxes:
-    #     draw.rectangle((j0, i0, j1, i1), outline='red')
-    # im.show()
     
     return bounding_boxes
 
@@ -232,7 +230,7 @@ def detect_red_light(I):
 data_path = 'data/RedLights2011_Medium'
 
 # set a path for saving predictions: 
-preds_path = '../data/hw01_preds' 
+preds_path = 'predictions' 
 os.makedirs(preds_path,exist_ok=True) # create directory if needed 
 
 # get sorted list of files: 
@@ -245,7 +243,6 @@ if __name__ == '__main__':
     preds = {}
     for i in range(len(file_names)):
         print(i)
-        i = 9
         # read image using PIL:
         I = Image.open(os.path.join(data_path,file_names[i]))
         
@@ -253,7 +250,6 @@ if __name__ == '__main__':
         I = np.asarray(I)
         
         preds[file_names[i]] = detect_red_light(I)
-        break
         
     # save preds (overwrites any previous predictions!)
     with open(os.path.join(preds_path,'preds.json'),'w') as f:
